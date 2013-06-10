@@ -1,6 +1,7 @@
 package model.json.input.velib;
 
 import model.json.input.Coord;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -21,6 +22,8 @@ public class VelibResponse {
     @JsonProperty("available_bikes")
     private int availableBikes;
     private int last_update;
+    @JsonIgnore
+    private boolean valid = false;
 
     public VelibResponse() {
     }
@@ -119,6 +122,14 @@ public class VelibResponse {
 
     public void setLast_update(int last_update) {
         this.last_update = last_update;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 
     private enum Status {OPEN, CLOSED}

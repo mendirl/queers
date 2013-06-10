@@ -1,7 +1,8 @@
 @(message: String)
 
-@main("Welcome to Play 2.1") {
-    
-    @play20.welcome(message, style = "Java")
-    
+@main(message) {
+    <ul>
+        <li><a href="@routes.Application.gmap">Les petites pédales avec Google Map</a></li>
+        <li><a href="@routes.Application.mapq">Les petites pédales avec Map Quest</a></li>
+    </ul>
 }

@@ -9,8 +9,7 @@
             body { height: 100%; margin: 0; padding: 0 }
             #map-canvas { height: 100% }
         </style>
-        <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=@key&sensor=true">
-        </script>
+        <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=@key&sensor=true"></script>
         <script type="text/javascript">
             // Enable the visual refresh
             google.maps.visualRefresh = true;
@@ -30,17 +29,24 @@
             function setMarkers(map) {
                 @for(a <- parks) {
                     var marker = new google.maps.Marker({
-                    position: new google.maps.LatLng(@a.getLat,@a.getLng),
-                    map: map,
-                    title:"@a.getName : @a.getLeft / @a.getAll"
+                        position: new google.maps.LatLng(@a.getLat,@a.getLng),
+                        map: map,
+                        title:"@a.getName : @a.getLeft / @a.getAll"
                     });
                 }
 
                 @for(v <- velibs) {
+                    var image;
+                    @if(v.isValid) {
+                       image = '/assets/images/marker-green.png'
+                    } else {
+                       image = '/assets/images/marker-azure.png'
+                    }
+
                     var marker = new google.maps.Marker({
                         position: new google.maps.LatLng(@v.getPosition.getLat,@v.getPosition.getLng),
                         map: map,
-                        icon: '/assets/images/marker-azure.png',
+                        icon: image,
                         title:"@v.getName @v.getAvailableBikes / @v.getBikeStands"
                     });
                 }
