@@ -70,7 +70,9 @@ public class MapService {
         for (Park park : parks) {
             for (VelibResponse velibResponse : velibs) {
                 Coord coordPark = new Coord(park.getLat(), park.getLng());
-                if (calculate(coordPark, velibResponse.getPosition()) < radius) {
+                double distance = calculate(coordPark, velibResponse.getPosition());
+                if (distance < radius) {
+                    velibResponse.setDistance(distance);
                     velibResponse.setValid(true);
                     park.addVelib(velibResponse.getBikeStands(), velibResponse.getAvailableBikes());
                 }

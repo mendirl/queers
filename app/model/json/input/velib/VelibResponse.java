@@ -24,6 +24,7 @@ public class VelibResponse {
     private int last_update;
     @JsonIgnore
     private boolean valid = false;
+    private double distance = 0;
 
     public VelibResponse() {
     }
@@ -131,6 +132,15 @@ public class VelibResponse {
     public void setValid(boolean valid) {
         this.valid = valid;
     }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
+
 
     private enum Status {OPEN, CLOSED}
 }
