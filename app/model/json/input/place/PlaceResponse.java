@@ -1,4 +1,4 @@
-package model.json.input.park;
+package model.json.input.place;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -6,7 +6,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ParkResponse {
+public class PlaceResponse {
     private String status;
     @JsonProperty("data")
     private List<Address> addresses;

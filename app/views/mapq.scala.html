@@ -1,67 +1,55 @@
-@(title: String, key: String, parks: List[model.json.output.Park], velibs:List[model.json.input.velib.VelibResponse])
+@(title: String, key: String, parks: List[model.json.output.Place], velibs:List[model.json.output.Place])
 
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-        <style type="text/css">
-            html { height: 100% }
-            body { height: 100%; margin: 0; padding: 0 }
-            #map-canvas { height: 100% }
-        </style>
-        <script src="http://www.mapquestapi.com/sdk/js/v7.0.s/mqa.toolkit.js?key=Fmjtd%7Cluub2gu7nu%2Cr0%3Do5-9ua01f"></script>
-        <script type="text/javascript">
-            MQA.EventUtil.observe(window, 'load', function() {
+@map {
+    <script src="http://www.mapquestapi.com/sdk/js/v7.0.s/mqa.toolkit.js?key=Fmjtd%7Cluub2gu7nu%2Cr0%3Do5-9ua01f"></script>
+    <script type="text/javascript">
+        MQA.EventUtil.observe(window, 'load', function() {
 
-            /*Create an object for options*/
-            var options={
-            elt:document.getElementById('map-canvas'),        /*ID of element on the page where you want the map added*/
-            zoom:13,                                   /*initial zoom level of map*/
-            latLng:{lat:48.85296820000001, lng: 2.34990210},   /*center of map in latitude/longitude*/
-            mtype:'map'                                /*map type (map)*/
-            };
+        /*Create an object for options*/
+        var options={
+        elt:document.getElementById('map-canvas'),        /*ID of element on the page where you want the map added*/
+        zoom:13,                                   /*initial zoom level of map*/
+        latLng:{lat:48.85296820000001, lng: 2.34990210},   /*center of map in latitude/longitude*/
+        mtype:'map'                                /*map type (map)*/
+        };
 
-            /*Construct an instance of MQA.TileMap with the options object*/
-            window.map = new MQA.TileMap(options);
+        /*Construct an instance of MQA.TileMap with the options object*/
+        window.map = new MQA.TileMap(options);
 
-            MQA.withModule('largezoom','viewoptions','mousewheel', function() {
+        MQA.withModule('largezoom','viewoptions','mousewheel', function() {
 
-            map.addControl(
-            new MQA.LargeZoom(),
-            new MQA.MapCornerPlacement(MQA.MapCorner.TOP_LEFT, new MQA.Size(5,5))
-            );
+        map.addControl(
+        new MQA.LargeZoom(),
+        new MQA.MapCornerPlacement(MQA.MapCorner.TOP_LEFT, new MQA.Size(5,5))
+        );
 
-            map.addControl(new MQA.ViewOptions());
+        map.addControl(new MQA.ViewOptions());
 
-            map.enableMouseWheelZoom();
-            });
+        map.enableMouseWheelZoom();
+        });
 
 
-            var marker;
-            var image;
+        var marker;
+        var image;
 
-            @for(a <- parks) {
-                marker = new MQA.Poi( {lat:@a.getLat, lng:@a.getLng} );
-                marker.setRolloverContent('@a.getName : @a.getLeft / @a.getAll');
-                map.addShape(marker);
+        @for(a <- parks) {
+            marker = new MQA.Poi( {lat:@a.getLat, lng:@a.getLng} );
+            marker.setRolloverContent('@a.getName : @a.getLeft / @a.getAll');
+            map.addShape(marker);
+        }
+        @for(v <- velibs) {
+            @if(v.isValid) {
+                image = new MQA.Icon("@routes.Assets.at("images/marker-green.png")",32,32);
+            } else {
+                image = new MQA.Icon("@routes.Assets.at("images/marker-azure.png")",32,32);
             }
-            @for(v <- velibs) {
-                @if(v.isValid) {
-                    image = new MQA.Icon("/assets/images/marker-green.png",32,32);
-                } else {
-                    image = new MQA.Icon("/assets/images/marker-azure.png",32,32);
-                }
 
-                marker = new MQA.Poi( {lat:@v.getPosition.getLat, lng:@v.getPosition.getLng} );
-                marker.setRolloverContent('@v.getName @v.getAvailableBikes / @v.getBikeStands - @v.getDistance');
-                marker.setIcon(image);
-                map.addShape(marker);
-            }
-            });
+            marker = new MQA.Poi( {lat:@v.getLat, lng:@v.getLng} );
+            marker.setRolloverContent('@v.getName @v.getLeft / @v.getAll - @v.getDistance');
+            marker.setIcon(image);
+            map.addShape(marker);
+        }
+        });
 
-        </script>
-    </head>
-    <body>
-        <div id="map-canvas" style="width: 800px; height: 600px"/>
-    </body>
-</html>
+    </script>
+}

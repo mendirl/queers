@@ -1,11 +1,11 @@
-package model.json.input.park;
+package model.json.input.place;
 
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AddressPark {
+public class AddressPlace {
     @JsonProperty("idequipements")
     private int idEquipement;
     private String name;

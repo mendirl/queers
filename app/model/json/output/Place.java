@@ -1,14 +1,16 @@
 package model.json.output;
 
-public class Park {
+public class Place {
 
     private String name;
     private double lat;
     private double lng;
     private int all;
     private int left;
+    private boolean valid;
+    private double distance;
 
-    public Park(String name, double lat, double lng) {
+    public Place(String name, double lat, double lng) {
         this.name = name;
         this.lat = lat;
         this.lng = lng;
@@ -37,5 +39,21 @@ public class Park {
 
     public int getLeft() {
         return left;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
     }
 }

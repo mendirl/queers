@@ -1,6 +1,6 @@
 package model.json.input.geocode;
 
-import model.json.input.park.AddressPark;
+import model.json.input.place.AddressPlace;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -10,13 +10,13 @@ import java.util.List;
 public class AddressResponse {
 
     @JsonProperty("data")
-    private List<AddressPark> addresses;
+    private List<AddressPlace> addresses;
 
-    public List<AddressPark> getAddresses() {
+    public List<AddressPlace> getAddresses() {
         return addresses;
     }
 
-    public void setAddresses(List<AddressPark> addresses) {
+    public void setAddresses(List<AddressPlace> addresses) {
         this.addresses = addresses;
     }
 }

@@ -4,11 +4,11 @@ import helper.JSONHelper;
 import helper.WSHelper;
 import model.json.input.Coord;
 import model.json.input.geocode.AddressResponse;
-import model.json.input.park.Address;
-import model.json.input.park.AddressPark;
-import model.json.input.park.ParkResponse;
+import model.json.input.place.Address;
+import model.json.input.place.AddressPlace;
+import model.json.input.place.PlaceResponse;
 import model.json.input.velib.VelibResponse;
-import model.json.output.Park;
+import model.json.output.Place;
 import play.libs.WS;
 
 import java.util.ArrayList;
@@ -17,30 +17,38 @@ import java.util.List;
 
 public class MapService {
 
-    private static List<Park> parks;
+    private static List<Place> parks;
+    private static List<Place> museums;
+    private static List<Place> velibs;
 
-    public static List<VelibResponse> getVelibs() {
+    public static List<Place> getVelibs() {
         return velibs;
     }
 
-    public static List<Park> getParks() {
+    public static List<Place> getParks() {
         return parks;
     }
 
-    private static List<VelibResponse> velibs;
-
-    public static void retrieveMap() {
-        parks = new ArrayList<Park>();
-
-        ParkResponse parkResponse = retrievePark();
-        velibs = retrieveVelib();
-
-        transform(parkResponse.getAddresses(), parks);
-
-        associate(parks, velibs, 0.4);
+    public static List<Place> getMuseums() {
+        return museums;
     }
 
-    private static ParkResponse retrievePark() {
+    public static void retrieveMap() {
+        parks = new ArrayList<Place>();
+        PlaceResponse parkResponse = retrievePark();
+        transformPlace(parkResponse.getAddresses(), parks);
+
+        museums = new ArrayList<Place>();
+        PlaceResponse museumResponse = retrieveMuseum();
+        transformPlace(museumResponse.getAddresses(), museums);
+
+        velibs = new ArrayList<Place>();
+        List<VelibResponse> velibResponses = retrieveVelib();
+        transformVelib(velibResponses, velibs);
+
+    }
+
+    private static PlaceResponse retrievePark() {
         String url = "https://api.paris.fr:3000/data/1.0/Equipements/get_equipements/";
         String token = "2e9e21d281009d7c585dfd981ced7c52baf0c3bd9f7b23ebb41960d2c954df9e32404d83c7ab86d1e6ef77c0dfd94730";
         String cid = "7";
@@ -49,7 +57,7 @@ public class MapService {
 
         WS.Response wsResponse = WSHelper.ask(url, "token", token, "cid", cid, "offset", offset, "limit", limit);
 
-        ParkResponse parkResponse = JSONHelper.convertToObject(wsResponse.asJson(), ParkResponse.class);
+        PlaceResponse parkResponse = JSONHelper.convertToObject(wsResponse.asJson(), PlaceResponse.class);
 
         return parkResponse;
     }
@@ -66,22 +74,36 @@ public class MapService {
         return Arrays.asList(velibResponse);
     }
 
-    private static void associate(List<Park> parks, List<VelibResponse> velibs, double radius) {
-        for (Park park : parks) {
-            for (VelibResponse velibResponse : velibs) {
+    private static PlaceResponse retrieveMuseum() {
+        String url = "https://api.paris.fr:3000/data/1.0/Equipements/get_equipements/";
+        String token = "2e9e21d281009d7c585dfd981ced7c52baf0c3bd9f7b23ebb41960d2c954df9e32404d83c7ab86d1e6ef77c0dfd94730";
+        String cid = "68";
+        String offset = "10";
+        String limit = "100";
+
+        WS.Response wsResponse = WSHelper.ask(url, "token", token, "cid", cid, "offset", offset, "limit", limit);
+
+        PlaceResponse museumResponse = JSONHelper.convertToObject(wsResponse.asJson(), PlaceResponse.class);
+
+        return museumResponse;
+    }
+
+    public static void associate(List<Place> parks, List<Place> velibs, double radius) {
+        for (Place park : parks) {
+            for (Place velib : velibs) {
                 Coord coordPark = new Coord(park.getLat(), park.getLng());
-                double distance = calculate(coordPark, velibResponse.getPosition());
+                double distance = calculate(coordPark, new Coord(velib.getLat(), velib.getLng()));
                 if (distance < radius) {
-                    velibResponse.setDistance(distance);
-                    velibResponse.setValid(true);
-                    park.addVelib(velibResponse.getBikeStands(), velibResponse.getAvailableBikes());
+                    velib.setDistance(distance);
+                    velib.setValid(true);
+                    park.addVelib(velib.getAll(), velib.getLeft());
                 }
             }
         }
     }
 
     private static double calculate(Coord coordPark, Coord coordVelib) {
-        double distance = 0;
+        double distance;
 
         int R = 6371; // km
         double dLat = Math.toRadians(coordVelib.getLat() - coordPark.getLat());
@@ -108,12 +130,20 @@ public class MapService {
         return addressResponse;
     }
 
-    private static void transform(List<Address> addresses, List<Park> parks) {
+    private static void transformPlace(List<Address> addresses, List<Place> parks) {
         for (Address parkAddress : addresses) {
             AddressResponse addressResponse = retrieveCoord(parkAddress);
-            AddressPark addressPark = addressResponse.getAddresses().get(0);
-            Park park = new Park(parkAddress.getName(), addressPark.getLat(), addressPark.getLon());
+            AddressPlace addressPark = addressResponse.getAddresses().get(0);
+            Place park = new Place(parkAddress.getName(), addressPark.getLat(), addressPark.getLon());
             parks.add(park);
+        }
+    }
+
+    private static void transformVelib(List<VelibResponse> velibResponses, List<Place> velibs) {
+        for (VelibResponse velibResponse : velibResponses) {
+            Place velib = new Place(velibResponse.getName(), velibResponse.getPosition().getLat(), velibResponse.getPosition().getLng());
+            velib.addVelib(velibResponse.getAvailableBikes(), velibResponse.getBikeStands());
+            velibs.add(velib);
         }
     }
 

@@ -1,4 +1,4 @@
-package model.json.input.park;
+package model.json.input.place;
 
 
 public class Address {
