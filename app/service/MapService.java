@@ -88,7 +88,7 @@ public class MapService {
             }
             // wher i am
         } else if (rad != 0 && lat != 0 && lng != 0) {
-            Place place = new Place("My place", lat, lng);
+            Place place = new Place(0, "My place", lat, lng);
 
             places.add(place);
 
@@ -176,14 +176,14 @@ public class MapService {
         for (Address address : addresses) {
             AddressResponse addressResponse = retrieveCoord(address);
             AddressPlace addressPlace = addressResponse.getAddresses().get(0);
-            Place place = new Place(address.getName(), addressPlace.getLat(), addressPlace.getLon());
+            Place place = new Place(addressPlace.getIdEquipement(), address.getName(), addressPlace.getLat(), addressPlace.getLon());
             places.add(place);
         }
     }
 
     private static void transformVelib(List<VelibResponse> velibResponses, List<Place> velibs) {
         for (VelibResponse velibResponse : velibResponses) {
-            Place velib = new Place(velibResponse.getName(), velibResponse.getPosition().getLat(), velibResponse.getPosition().getLng());
+            Place velib = new Place(velibResponse.getNumber(), velibResponse.getName(), velibResponse.getPosition().getLat(), velibResponse.getPosition().getLng());
             velib.addVelib(velibResponse.getBikeStands(), velibResponse.getAvailableBikes());
             velibs.add(velib);
         }

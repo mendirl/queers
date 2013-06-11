@@ -2,6 +2,7 @@ package model.json.output;
 
 public class Place {
 
+    private int id;
     private String name;
     private double lat;
     private double lng;
@@ -9,7 +10,8 @@ public class Place {
     private int left;
     private double distance;
 
-    public Place(String name, double lat, double lng) {
+    public Place(int id, String name, double lat, double lng) {
+        this.id = id;
         this.name = name;
         this.lat = lat;
         this.lng = lng;
@@ -18,6 +20,10 @@ public class Place {
     public void addVelib(int all, int left) {
         this.all += all;
         this.left += left;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getName() {
