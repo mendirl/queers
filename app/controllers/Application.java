@@ -3,6 +3,7 @@ package controllers;
 import model.json.output.Data;
 import org.codehaus.jackson.JsonNode;
 import play.libs.Json;
+import play.libs.Jsonp;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -10,7 +11,6 @@ import service.MapService;
 import views.html.gmap;
 import views.html.index;
 import views.html.mapq;
-
 
 public class Application extends Controller {
 
@@ -29,9 +29,14 @@ public class Application extends Controller {
     }
 
     @BodyParser.Of(BodyParser.Json.class)
-    public static Result api(double rad, double lat, double lng, String place, boolean all) {
+    public static Result api(double rad, double lat, double lng, String place, boolean all, String callback) {
         Data data = calculate(rad, lat, lng, place, all);
         JsonNode node = Json.toJson(data);
+        // return jsonp for cross-domain call
+        if (callback != null) {
+            return ok(Jsonp.jsonp(callback, node));
+        }
+
         return ok(node);
     }
 

@@ -5,9 +5,9 @@
 # Home page
 GET     /                           controllers.Application.index()
 
-GET     /gmap                       controllers.Application.gmap(rad: Double ?= 0.4, lat: Double ?= 0, lng: Double ?= 0, place ?= null, all:Boolean ?= false)
-GET     /mapq                       controllers.Application.mapq(rad: Double ?= 0.4, lat: Double ?= 0, lng: Double ?= 0, place ?= null, all:Boolean ?= false)
-GET     /api                        controllers.Application.api(rad: Double ?= 0.4, lat: Double ?= 0, lng: Double ?= 0, place ?= null, all:Boolean ?= false)
+GET     /gmap                       controllers.Application.gmap(rad: Double ?= 0.4, lat: Double ?= 0, lng: Double ?= 0, place:String ?= null, all:Boolean ?= false)
+GET     /mapq                       controllers.Application.mapq(rad: Double ?= 0.4, lat: Double ?= 0, lng: Double ?= 0, place:String ?= null, all:Boolean ?= false)
+GET     /api                        controllers.Application.api(rad: Double ?= 0.4, lat: Double ?= 0, lng: Double ?= 0, place:String ?= null, all:Boolean ?= false, callback:String ?= null)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
