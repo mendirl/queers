@@ -11,9 +11,9 @@ public class Data {
     private Set<Place> others;
 
     public Data() {
-        places = new HashSet<>();
-        velibs = new HashSet<>();
-        others = new HashSet<>();
+        places = new HashSet<Place>();
+        velibs = new HashSet<Place>();
+        others = new HashSet<Place>();
     }
 
     public Data(Set<Place> places, Set<Place> velibs, Set<Place> others) {
