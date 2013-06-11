@@ -23,15 +23,15 @@ public class MapService {
     private static List<Place> staticVelibs;
 
     public static void retrieveMap() {
-        staticParks = new ArrayList<>();
+        staticParks = new ArrayList<Place>();
         PlaceResponse parkResponse = retrievePark();
         transformPlace(parkResponse.getAddresses(), staticParks);
 
-        staticMuseums = new ArrayList<>();
+        staticMuseums = new ArrayList<Place>();
         PlaceResponse museumResponse = retrieveMuseum();
         transformPlace(museumResponse.getAddresses(), staticMuseums);
 
-        staticVelibs = new ArrayList<>();
+        staticVelibs = new ArrayList<Place>();
         List<VelibResponse> velibResponses = retrieveVelib();
         transformVelib(velibResponses, staticVelibs);
 
@@ -78,18 +78,13 @@ public class MapService {
     }
 
     public static Data associate(double rad, double lat, double lng, String type, boolean all) {
-        List<Place> places = new ArrayList<>();
+        List<Place> places = new ArrayList<Place>();
         // specific place around me
         if (rad != 0 && lat != 0 && lng != 0 && type != null) {
-            switch (type) {
-                case "park":
-                    places.addAll(findPlace(staticParks, rad, lat, lng));
-                    break;
-                case "museum":
-                    places.addAll(findPlace(staticMuseums, rad, lat, lng));
-                    break;
-                default:
-                    break;
+            if ("park".equals(type)) {
+                places.addAll(findPlace(staticParks, rad, lat, lng));
+            } else if ("museum".equals(type)) {
+                places.addAll(findPlace(staticMuseums, rad, lat, lng));
             }
             // wher i am
         } else if (rad != 0 && lat != 0 && lng != 0) {
@@ -98,15 +93,10 @@ public class MapService {
             places.add(place);
 
         } else if (type != null) {
-            switch (type) {
-                case "park":
-                    places.addAll(staticParks);
-                    break;
-                case "museum":
-                    places.addAll(staticMuseums);
-                    break;
-                default:
-                    break;
+            if ("park".equals(type)) {
+                places.addAll(staticParks);
+            } else if ("museum".equals(type)) {
+                places.addAll(staticMuseums);
             }
         } else {
             Data data = new Data();
@@ -118,7 +108,7 @@ public class MapService {
     }
 
     public static List<Place> findPlace(List<Place> places, double radius, double lat, double lng) {
-        List<Place> result = new ArrayList<>();
+        List<Place> result = new ArrayList<Place>();
         Coord myCoord = new Coord(lat, lng);
 
         for (Place place : places) {
