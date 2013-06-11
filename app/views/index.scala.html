@@ -2,7 +2,48 @@
 
 @main(message) {
     <ul>
-        <li><a href="@routes.Application.gmap">Les petites pédales avec Google Map</a></li>
-        <li><a href="@routes.Application.mapq">Les petites pédales avec Map Quest</a></li>
+        <li><a href="@routes.Application.gmap()">Les petites pédales avec Google Map</a></li>
+        <li><a href="@routes.Application.mapq()">Les petites pédales avec Map Quest</a></li>
+    </ul>
+    <br>
+    <ul>
+        <li>par défaut les liens affichents toutes les stations velibs</li>
+        <li>il y a des balises de 3 couleurs distinctes :</li>
+        <ul>
+            <li>rouge ou violet : centre d'intérêt</li>
+            <li>vert : stations se trouvant dans un rayon définit</li>
+            <li>bleu : stations étant loin de tout</li>
+        </ul>
+        <li>les urls peuvent avoir des paramètres :</li>
+        <ul>
+            <li>lat : lattitude du point sur lequel on veut se center (décimal)</li>
+            <li>lng : longitude du point sur lequel on veut se center (décimal)</li>
+            <li>rad : le rayon du disque (km), par défaut à 0.4</li>
+            <li>place : type de données que l'on veut afficher (park, museum, ...)</li>
+            <li>all : affichage des stations bleues (booléen) </li>
+        </ul>
+        <li>on peut évidemment mixer les paramètres, quelques exemples :</li>
+        <ul>
+            <li><a href="@routes.Application.gmap(0.5, 48.853333, 2.369167)">
+                afficher les stations velibs dans un rayon de 500m autours de ma position (par ex Bastille)</a></li>
+            <li><a href="@routes.Application.gmap(0.5, 48.853333, 2.369167, null, true)">
+                afficher les stations velibs dans un rayon de 500m autours de ma position (par ex Bastille), et tous les autres stations</a></li>
+            <li><a href="@routes.Application.mapq(0.5, 0.0, 0.0, "park")">
+                afficher les stations velibs dans un rayon de 500m autours des parcs</a></li>
+            <li><a href="@routes.Application.mapq(0.5, 0.0, 0.0, "park", true)">
+                afficher les stations velibs dans un rayon de 500m autours des parcs, et tous les autres stations</a></li>
+            <li><a href="@routes.Application.mapq(0.6, 48.8530, 2.3498, "museum")">
+                afficher les stations velibs dans un rayon de 600m autours des musées se situant à moins de 600m de ma position (par ex Notre-Dame)</a></li>
+            <li><a href="@routes.Application.gmap(0.6, 48.8530, 2.3498, "museum", true)">
+                afficher les stations velibs dans un rayon de 600m autours des musées se situant à moins de 600m de ma position (par ex Notre-Dame), et tous les autres stations</a></li>
+        </ul>
+        <li>possible d'avoir le json correspondant à chacune des maps, il suffit de remplacer gmap/mapq par api ex:</li>
+        <ul>
+            <li><a href="@routes.Application.api()">JSON de toutes les stations velibs</a></li>
+            <li><a href="@routes.Application.api(0.5, 48.853333, 2.369167, null, true)">
+                JSON des stations velibs dans un rayon de 500m autours de ma position (par ex Bastille), et tous les autres stations</a></li>
+            <li><a href="@routes.Application.api(0.6, 48.8530, 2.3498, "museum")">
+                JSON des stations velibs dans un rayon de 600m autours des musées se situant à moins de 600m de ma position (par ex Notre-Dame)</a></li>
+        </ul>
     </ul>
 }

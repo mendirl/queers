@@ -7,7 +7,6 @@ public class Place {
     private double lng;
     private int all;
     private int left;
-    private boolean valid;
     private double distance;
 
     public Place(String name, double lat, double lng) {
@@ -39,14 +38,6 @@ public class Place {
 
     public int getLeft() {
         return left;
-    }
-
-    public boolean isValid() {
-        return valid;
-    }
-
-    public void setValid(boolean valid) {
-        this.valid = valid;
     }
 
     public double getDistance() {

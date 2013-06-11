@@ -1,10 +1,14 @@
 package controllers;
 
+import model.json.output.Data;
+import org.codehaus.jackson.JsonNode;
+import play.libs.Json;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import service.MapService;
-import views.html.index;
 import views.html.gmap;
+import views.html.index;
 import views.html.mapq;
 
 
@@ -14,18 +18,25 @@ public class Application extends Controller {
         return ok(index.render("Les Petites Pédales"));
     }
 
-    public static Result gmap() {
-        calculate();
-        return ok(gmap.render("Les Petites Pédales", "AIzaSyA7PTIhHAxOHkXscvX2JKQ849rsqW1VhpY", MapService.getParks(), MapService.getVelibs()));
+    public static Result gmap(double rad, double lat, double lng, String place, boolean all) {
+        Data data = calculate(rad, lat, lng, place, all);
+        return ok(gmap.render("Les Petites Pédales", "AIzaSyA7PTIhHAxOHkXscvX2JKQ849rsqW1VhpY", data));
     }
 
-    public static Result mapq() {
-        calculate();
-        return ok(mapq.render("Les Petites Pédales", "Fmjtd%7Cluub2gu7nu%2Cr0%3Do5-9ua01f", MapService.getParks(), MapService.getVelibs()));
+    public static Result mapq(double rad, double lat, double lng, String place, boolean all) {
+        Data data = calculate(rad, lat, lng, place, all);
+        return ok(mapq.render("Les Petites Pédales", "Fmjtd%7Cluub2gu7nu%2Cr0%3Do5-9ua01f", data));
     }
 
-    private static void calculate(){
-        MapService.associate(MapService.getParks(), MapService.getVelibs(), 0.4);
+    @BodyParser.Of(BodyParser.Json.class)
+    public static Result api(double rad, double lat, double lng, String place, boolean all) {
+        Data data = calculate(rad, lat, lng, place, all);
+        JsonNode node = Json.toJson(data);
+        return ok(node);
+    }
+
+    private static Data calculate(double rad, double lat, double lng, String place, boolean all) {
+        return MapService.associate(rad, lat, lng, place, all);
     }
 
 

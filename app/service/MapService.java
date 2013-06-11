@@ -8,6 +8,7 @@ import model.json.input.place.Address;
 import model.json.input.place.AddressPlace;
 import model.json.input.place.PlaceResponse;
 import model.json.input.velib.VelibResponse;
+import model.json.output.Data;
 import model.json.output.Place;
 import play.libs.WS;
 
@@ -17,34 +18,22 @@ import java.util.List;
 
 public class MapService {
 
-    private static List<Place> parks;
-    private static List<Place> museums;
-    private static List<Place> velibs;
-
-    public static List<Place> getVelibs() {
-        return velibs;
-    }
-
-    public static List<Place> getParks() {
-        return parks;
-    }
-
-    public static List<Place> getMuseums() {
-        return museums;
-    }
+    private static List<Place> staticParks;
+    private static List<Place> staticMuseums;
+    private static List<Place> staticVelibs;
 
     public static void retrieveMap() {
-        parks = new ArrayList<Place>();
+        staticParks = new ArrayList<>();
         PlaceResponse parkResponse = retrievePark();
-        transformPlace(parkResponse.getAddresses(), parks);
+        transformPlace(parkResponse.getAddresses(), staticParks);
 
-        museums = new ArrayList<Place>();
+        staticMuseums = new ArrayList<>();
         PlaceResponse museumResponse = retrieveMuseum();
-        transformPlace(museumResponse.getAddresses(), museums);
+        transformPlace(museumResponse.getAddresses(), staticMuseums);
 
-        velibs = new ArrayList<Place>();
+        staticVelibs = new ArrayList<>();
         List<VelibResponse> velibResponses = retrieveVelib();
-        transformVelib(velibResponses, velibs);
+        transformVelib(velibResponses, staticVelibs);
 
     }
 
@@ -88,28 +77,91 @@ public class MapService {
         return museumResponse;
     }
 
-    public static void associate(List<Place> parks, List<Place> velibs, double radius) {
-        for (Place park : parks) {
-            for (Place velib : velibs) {
-                Coord coordPark = new Coord(park.getLat(), park.getLng());
-                double distance = calculate(coordPark, new Coord(velib.getLat(), velib.getLng()));
+    public static Data associate(double rad, double lat, double lng, String type, boolean all) {
+        List<Place> places = new ArrayList<>();
+        // specific place around me
+        if (rad != 0 && lat != 0 && lng != 0 && type != null) {
+            switch (type) {
+                case "park":
+                    places.addAll(findPlace(staticParks, rad, lat, lng));
+                    break;
+                case "museum":
+                    places.addAll(findPlace(staticMuseums, rad, lat, lng));
+                    break;
+                default:
+                    break;
+            }
+            // wher i am
+        } else if (rad != 0 && lat != 0 && lng != 0) {
+            Place place = new Place("My place", lat, lng);
+
+            places.add(place);
+
+        } else if (type != null) {
+            switch (type) {
+                case "park":
+                    places.addAll(staticParks);
+                    break;
+                case "museum":
+                    places.addAll(staticMuseums);
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            Data data = new Data();
+            data.getVelibs().addAll(staticVelibs);
+            return data;
+        }
+
+        return associate(places, rad, all);
+    }
+
+    public static List<Place> findPlace(List<Place> places, double radius, double lat, double lng) {
+        List<Place> result = new ArrayList<>();
+        Coord myCoord = new Coord(lat, lng);
+
+        for (Place place : places) {
+            Coord coordPlace = new Coord(place.getLat(), place.getLng());
+            double distance = calculate(myCoord, coordPlace);
+            if (distance < radius) {
+                result.add(place);
+            }
+        }
+
+        return result;
+    }
+
+    public static Data associate(List<Place> places, double radius, boolean all) {
+        Data data = new Data();
+        for (Place place : places) {
+            data.getPlaces().add(place);
+            Coord coordPlace = new Coord(place.getLat(), place.getLng());
+            for (Place velib : staticVelibs) {
+                Coord coordVelib = new Coord(velib.getLat(), velib.getLng());
+                double distance = calculate(coordPlace, coordVelib);
                 if (distance < radius) {
                     velib.setDistance(distance);
-                    velib.setValid(true);
-                    park.addVelib(velib.getAll(), velib.getLeft());
+                    place.addVelib(velib.getAll(), velib.getLeft());
+                    data.getVelibs().add(velib);
+                } else if (all) {
+                    velib.setDistance(0);
+                    data.getOthers().add(velib);
                 }
             }
         }
+        data.getOthers().removeAll(data.getVelibs());
+        return data;
     }
 
-    private static double calculate(Coord coordPark, Coord coordVelib) {
+    private static double calculate(Coord coordPlace, Coord coordVelib) {
         double distance;
 
         int R = 6371; // km
-        double dLat = Math.toRadians(coordVelib.getLat() - coordPark.getLat());
-        double dLon = Math.toRadians(coordVelib.getLng() - coordPark.getLng());
+        double dLat = Math.toRadians(coordVelib.getLat() - coordPlace.getLat());
+        double dLon = Math.toRadians(coordVelib.getLng() - coordPlace.getLng());
         double lat1 = Math.toRadians(coordVelib.getLat());
-        double lat2 = Math.toRadians(coordPark.getLat());
+        double lat2 = Math.toRadians(coordPlace.getLat());
 
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -118,10 +170,10 @@ public class MapService {
         return distance;
     }
 
-    private static AddressResponse retrieveCoord(Address parkAddress) {
+    private static AddressResponse retrieveCoord(Address placeAddress) {
         String url = "https://api.paris.fr:3000/data/1.0/Equipements/get_equipement/";
         String token = "2e9e21d281009d7c585dfd981ced7c52baf0c3bd9f7b23ebb41960d2c954df9e32404d83c7ab86d1e6ef77c0dfd94730";
-        String id = String.valueOf(parkAddress.getId());
+        String id = String.valueOf(placeAddress.getId());
 
         WS.Response wsResponse = WSHelper.ask(url, "token", token, "id", id);
 
@@ -130,19 +182,19 @@ public class MapService {
         return addressResponse;
     }
 
-    private static void transformPlace(List<Address> addresses, List<Place> parks) {
-        for (Address parkAddress : addresses) {
-            AddressResponse addressResponse = retrieveCoord(parkAddress);
-            AddressPlace addressPark = addressResponse.getAddresses().get(0);
-            Place park = new Place(parkAddress.getName(), addressPark.getLat(), addressPark.getLon());
-            parks.add(park);
+    private static void transformPlace(List<Address> addresses, List<Place> places) {
+        for (Address address : addresses) {
+            AddressResponse addressResponse = retrieveCoord(address);
+            AddressPlace addressPlace = addressResponse.getAddresses().get(0);
+            Place place = new Place(address.getName(), addressPlace.getLat(), addressPlace.getLon());
+            places.add(place);
         }
     }
 
     private static void transformVelib(List<VelibResponse> velibResponses, List<Place> velibs) {
         for (VelibResponse velibResponse : velibResponses) {
             Place velib = new Place(velibResponse.getName(), velibResponse.getPosition().getLat(), velibResponse.getPosition().getLng());
-            velib.addVelib(velibResponse.getAvailableBikes(), velibResponse.getBikeStands());
+            velib.addVelib(velibResponse.getBikeStands(), velibResponse.getAvailableBikes());
             velibs.add(velib);
         }
     }

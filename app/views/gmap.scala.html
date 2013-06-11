@@ -1,4 +1,4 @@
-@(title: String, key: String, parks: List[model.json.output.Place], velibs:List[model.json.output.Place])
+@(title: String, key: String, data: model.json.output.Data)
 
 @map {
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=@key&sensor=true"></script>
@@ -19,27 +19,29 @@
         }
 
         function setMarkers(map) {
-            @for(a <- parks) {
+            @for(p <- data.getPlaces) {
                 var marker = new google.maps.Marker({
-                    position: new google.maps.LatLng(@a.getLat,@a.getLng),
+                    position: new google.maps.LatLng(@p.getLat, @p.getLng),
                     map: map,
-                    title:"@a.getName : @a.getLeft / @a.getAll"
+                    title:"@p.getName - @p.getLeft/@p.getAll"
                 });
             }
 
-            @for(v <- velibs) {
-                var image;
-                @if(v.isValid) {
-                   image = '/assets/images/marker-green.png'
-                } else {
-                   image = '/assets/images/marker-azure.png'
-                }
-
+            @for(v <- data.getVelibs) {
                 var marker = new google.maps.Marker({
-                    position: new google.maps.LatLng(@v.getLat,@v.getLng),
+                    position: new google.maps.LatLng(@v.getLat, @v.getLng),
                     map: map,
-                    icon: image,
-                    title:"@v.getName @v.getLeft / @v.getAll - @v.getDistance"
+                    icon: '@routes.Assets.at("images/marker-green.png")',
+                    title:"@v.getName - @v.getLeft/@v.getAll - @v.getDistance km"
+                });
+            }
+
+            @for(o <- data.getOthers) {
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(@o.getLat, @o.getLng),
+                    map: map,
+                    icon: '@routes.Assets.at("images/marker-azure.png")',
+                    title:"@o.getName - @o.getLeft/@o.getAll - @o.getDistance km"
                 });
             }
         }

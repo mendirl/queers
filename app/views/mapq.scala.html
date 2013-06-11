@@ -1,4 +1,4 @@
-@(title: String, key: String, parks: List[model.json.output.Place], velibs:List[model.json.output.Place])
+@(title: String, key: String, data: model.json.output.Data)
 
 @map {
     <script src="http://www.mapquestapi.com/sdk/js/v7.0.s/mqa.toolkit.js?key=Fmjtd%7Cluub2gu7nu%2Cr0%3Do5-9ua01f"></script>
@@ -8,7 +8,7 @@
         /*Create an object for options*/
         var options={
         elt:document.getElementById('map-canvas'),        /*ID of element on the page where you want the map added*/
-        zoom:13,                                   /*initial zoom level of map*/
+        zoom:15,                                   /*initial zoom level of map*/
         latLng:{lat:48.85296820000001, lng: 2.34990210},   /*center of map in latitude/longitude*/
         mtype:'map'                                /*map type (map)*/
         };
@@ -32,20 +32,24 @@
         var marker;
         var image;
 
-        @for(a <- parks) {
-            marker = new MQA.Poi( {lat:@a.getLat, lng:@a.getLng} );
-            marker.setRolloverContent('@a.getName : @a.getLeft / @a.getAll');
+        @for(p <- data.getPlaces) {
+            marker = new MQA.Poi( {lat:@p.getLat, lng:@p.getLng} );
+            marker.setRolloverContent('@p.getName - @p.getLeft/@p.getAll');
             map.addShape(marker);
         }
-        @for(v <- velibs) {
-            @if(v.isValid) {
-                image = new MQA.Icon("@routes.Assets.at("images/marker-green.png")",32,32);
-            } else {
-                image = new MQA.Icon("@routes.Assets.at("images/marker-azure.png")",32,32);
-            }
+        @for(v <- data.getVelibs) {
+            image = new MQA.Icon("@routes.Assets.at("images/marker-green.png")",32,32);
+
 
             marker = new MQA.Poi( {lat:@v.getLat, lng:@v.getLng} );
-            marker.setRolloverContent('@v.getName @v.getLeft / @v.getAll - @v.getDistance');
+            marker.setRolloverContent('@v.getName - @v.getLeft/@v.getAll - @v.getDistance');
+            marker.setIcon(image);
+            map.addShape(marker);
+        }
+        @for(o <- data.getOthers) {
+            image = new MQA.Icon("@routes.Assets.at("images/marker-azure.png")",32,32);
+            marker = new MQA.Poi( {lat:@o.getLat, lng:@o.getLng} );
+            marker.setRolloverContent('@o.getName - @o.getLeft/@o.getAll - @o.getDistance');
             marker.setIcon(image);
             map.addShape(marker);
         }
