@@ -10,6 +10,9 @@ import model.json.input.place.PlaceResponse;
 import model.json.input.velib.VelibResponse;
 import model.json.output.Data;
 import model.json.output.Place;
+import org.joda.time.Duration;
+import org.joda.time.Instant;
+import org.joda.time.Minutes;
 import play.libs.WS;
 
 import java.util.ArrayList;
@@ -21,6 +24,7 @@ public class MapService {
     private static List<Place> staticParks;
     private static List<Place> staticMuseums;
     private static List<Place> staticVelibs;
+    private static Instant lastCheck;
 
     public static void retrieveMap() {
         staticParks = new ArrayList<Place>();
@@ -35,6 +39,8 @@ public class MapService {
         List<VelibResponse> velibResponses = retrieveVelib();
         transformVelib(velibResponses, staticVelibs);
 
+
+        lastCheck = Instant.now();
     }
 
     private static PlaceResponse retrievePark() {
@@ -78,6 +84,19 @@ public class MapService {
     }
 
     public static Data associate(double rad, double lat, double lng, String type, boolean all) {
+        // check if update velib is needed
+
+        Instant now = Instant.now();
+
+        Duration duration = new Duration(lastCheck, now);
+
+        if (duration.isLongerThan(Minutes.THREE.toStandardDuration())) {
+            List<VelibResponse> velibResponses = retrieveVelib();
+            transformVelib(velibResponses, staticVelibs);
+            lastCheck = now;
+        }
+
+
         List<Place> places = new ArrayList<Place>();
         // specific place around me
         if (rad != 0 && lat != 0 && lng != 0 && type != null) {
@@ -100,6 +119,7 @@ public class MapService {
             }
         } else {
             Data data = new Data();
+            data.addDate(lastCheck.toDateTime());
             data.getVelibs().addAll(staticVelibs);
             return data;
         }
@@ -124,6 +144,7 @@ public class MapService {
 
     public static Data associate(List<Place> places, double radius, boolean all) {
         Data data = new Data();
+        data.addDate(lastCheck.toDateTime());
         for (Place place : places) {
             data.getPlaces().add(place);
             Coord coordPlace = new Coord(place.getLat(), place.getLng());
