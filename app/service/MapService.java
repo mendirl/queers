@@ -27,17 +27,14 @@ public class MapService {
     private static Instant lastCheck;
 
     public static void retrieveMap() {
-        staticParks = new ArrayList<Place>();
         PlaceResponse parkResponse = retrievePark();
-        transformPlace(parkResponse.getAddresses(), staticParks);
+        staticParks = transformPlace(parkResponse.getAddresses());
 
-        staticMuseums = new ArrayList<Place>();
         PlaceResponse museumResponse = retrieveMuseum();
-        transformPlace(museumResponse.getAddresses(), staticMuseums);
+        staticMuseums = transformPlace(museumResponse.getAddresses());
 
-        staticVelibs = new ArrayList<Place>();
         List<VelibResponse> velibResponses = retrieveVelib();
-        transformVelib(velibResponses, staticVelibs);
+        staticVelibs = transformVelib(velibResponses);
 
 
         lastCheck = Instant.now();
@@ -83,48 +80,51 @@ public class MapService {
         return museumResponse;
     }
 
-    public static Data associate(double rad, double lat, double lng, String type, boolean all) {
-        // check if update velib is needed
-
-        Instant now = Instant.now();
+    private static synchronized void updateVelibs() {
+        final Instant now = Instant.now();
 
         Duration duration = new Duration(lastCheck, now);
-
         if (duration.isLongerThan(Minutes.THREE.toStandardDuration())) {
             List<VelibResponse> velibResponses = retrieveVelib();
-            transformVelib(velibResponses, staticVelibs);
-            lastCheck = now;
+            staticVelibs = transformVelib(velibResponses);
         }
+    }
 
+    public static Data associate(double rad, double lat, double lng, String type, boolean all) {
+        // check if update velib is needed
+        updateVelibs();
 
         List<Place> places = new ArrayList<Place>();
+        Data data = new Data();
+
         // specific place around me
         if (rad != 0 && lat != 0 && lng != 0 && type != null) {
-            if ("park".equals(type)) {
-                places.addAll(findPlace(staticParks, rad, lat, lng));
-            } else if ("museum".equals(type)) {
-                places.addAll(findPlace(staticMuseums, rad, lat, lng));
-            }
-            // wher i am
-        } else if (rad != 0 && lat != 0 && lng != 0) {
-            Place place = new Place(0, "My place", lat, lng);
+            if (rad != 0 && lat != 0 && lng != 0 && type != null) {
+                if ("park".equals(type)) {
+                    places.addAll(findPlace(staticParks, rad, lat, lng));
+                } else if ("museum".equals(type)) {
+                    places.addAll(findPlace(staticMuseums, rad, lat, lng));
+                }
+                // wher i am
+            } else if (rad != 0 && lat != 0 && lng != 0) {
+                Place place = new Place(0, "My place", lat, lng);
 
-            places.add(place);
+                places.add(place);
 
-        } else if (type != null) {
-            if ("park".equals(type)) {
-                places.addAll(staticParks);
-            } else if ("museum".equals(type)) {
-                places.addAll(staticMuseums);
+            } else if (type != null) {
+                if ("park".equals(type)) {
+                    places.addAll(staticParks);
+                } else if ("museum".equals(type)) {
+                    places.addAll(staticMuseums);
+                }
             }
+            data = associate(places, rad, all);
         } else {
-            Data data = new Data();
             data.addDate(lastCheck.toDateTime());
             data.getVelibs().addAll(staticVelibs);
-            return data;
         }
 
-        return associate(places, rad, all);
+        return data;
     }
 
     public static List<Place> findPlace(List<Place> places, double radius, double lat, double lng) {
@@ -193,21 +193,28 @@ public class MapService {
         return addressResponse;
     }
 
-    private static void transformPlace(List<Address> addresses, List<Place> places) {
+    private static List<Place> transformPlace(List<Address> addresses) {
+        List<Place> places = new ArrayList<Place>(addresses.size());
         for (Address address : addresses) {
             AddressResponse addressResponse = retrieveCoord(address);
             AddressPlace addressPlace = addressResponse.getAddresses().get(0);
             Place place = new Place(addressPlace.getIdEquipement(), address.getName(), addressPlace.getLat(), addressPlace.getLon());
             places.add(place);
         }
+
+        return places;
     }
 
-    private static void transformVelib(List<VelibResponse> velibResponses, List<Place> velibs) {
+    private static List<Place> transformVelib(List<VelibResponse> velibResponses) {
+        List<Place> velibs = new ArrayList<Place>(velibResponses.size());
+
         for (VelibResponse velibResponse : velibResponses) {
             Place velib = new Place(velibResponse.getNumber(), velibResponse.getName(), velibResponse.getPosition().getLat(), velibResponse.getPosition().getLng());
             velib.addVelib(velibResponse.getBikeStands(), velibResponse.getAvailableBikes());
             velibs.add(velib);
         }
+
+        return velibs;
     }
 
 
