@@ -1,7 +1,7 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import model.json.output.Data;
-import org.codehaus.jackson.JsonNode;
 import play.libs.Json;
 import play.libs.Jsonp;
 import play.mvc.BodyParser;

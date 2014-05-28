@@ -1,7 +1,7 @@
 package model.json.input.geocode;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import model.json.input.Coord;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 
 public class Geometry {
