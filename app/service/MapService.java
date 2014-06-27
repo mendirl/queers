@@ -13,7 +13,8 @@ import model.json.output.Place;
 import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.joda.time.Minutes;
-import play.libs.WS;
+import play.Logger;
+import play.libs.ws.WSResponse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +48,9 @@ public class MapService {
         String offset = "10";
         String limit = "100";
 
-        WS.Response wsResponse = WSHelper.ask(url, "token", token, "cid", cid, "offset", offset, "limit", limit);
+        WSResponse wsResponse = WSHelper.ask(url, "token", token, "cid", cid, "offset", offset, "limit", limit);
+
+        Logger.debug("park URL : " + wsResponse.getUri().toString());
 
         PlaceResponse parkResponse = JSONHelper.convertToObject(wsResponse.asJson(), PlaceResponse.class);
 
@@ -59,7 +62,9 @@ public class MapService {
         String apiKey = "a56c9c8e11df2ff056888f0add2da816c3a41c91";
         String contract = "Paris";
 
-        WS.Response wsResponse = WSHelper.ask(url, "apiKey", apiKey, "contract", contract);
+        WSResponse wsResponse = WSHelper.ask(url, "apiKey", apiKey, "contract", contract);
+
+        Logger.debug("velib URL : " + wsResponse.getUri().toString());
 
         VelibResponse[] velibResponse = JSONHelper.convertToObject(wsResponse.asJson(), VelibResponse[].class);
 
@@ -73,7 +78,9 @@ public class MapService {
         String offset = "10";
         String limit = "100";
 
-        WS.Response wsResponse = WSHelper.ask(url, "token", token, "cid", cid, "offset", offset, "limit", limit);
+        WSResponse wsResponse = WSHelper.ask(url, "token", token, "cid", cid, "offset", offset, "limit", limit);
+
+        Logger.debug("museum URL : " + wsResponse.getUri().toString());
 
         PlaceResponse museumResponse = JSONHelper.convertToObject(wsResponse.asJson(), PlaceResponse.class);
 
@@ -92,13 +99,13 @@ public class MapService {
 
     public static Data associate(double rad, double lat, double lng, String type, boolean all) {
         // check if update velib is needed
-        updateVelibs();
+        //updateVelibs();
 
         List<Place> places = new ArrayList<Place>();
         Data data = new Data();
 
         // specific place around me
-        if (rad != 0 && lat != 0 && lng != 0 && type != null) {
+        if (rad != 0 && lat != 0 && lng != 0 || type != null) {
             if (rad != 0 && lat != 0 && lng != 0 && type != null) {
                 if ("park".equals(type)) {
                     places.addAll(findPlace(staticParks, rad, lat, lng));
@@ -186,7 +193,7 @@ public class MapService {
         String token = "2e9e21d281009d7c585dfd981ced7c52baf0c3bd9f7b23ebb41960d2c954df9e32404d83c7ab86d1e6ef77c0dfd94730";
         String id = String.valueOf(placeAddress.getId());
 
-        WS.Response wsResponse = WSHelper.ask(url, "token", token, "id", id);
+        WSResponse wsResponse = WSHelper.ask(url, "token", token, "id", id);
 
         AddressResponse addressResponse = JSONHelper.convertToObject(wsResponse.asJson(), AddressResponse.class);
 
