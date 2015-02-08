@@ -16,6 +16,6 @@ public class WSHelper {
         }
 
         F.Promise<WSResponse> promise = holder.get();
-        return promise.get(3000);
+        return promise.get(30000);
     }
 }
