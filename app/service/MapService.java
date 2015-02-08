@@ -101,7 +101,7 @@ public class MapService {
         // check if update velib is needed
         //updateVelibs();
 
-        List<Place> places = new ArrayList<Place>();
+        List<Place> places = new ArrayList<>();
         Data data = new Data();
 
         // specific place around me
@@ -135,7 +135,7 @@ public class MapService {
     }
 
     public static List<Place> findPlace(List<Place> places, double radius, double lat, double lng) {
-        List<Place> result = new ArrayList<Place>();
+        List<Place> result = new ArrayList<>();
         Coord myCoord = new Coord(lat, lng);
 
         for (Place place : places) {
@@ -201,7 +201,7 @@ public class MapService {
     }
 
     private static List<Place> transformPlace(List<Address> addresses) {
-        List<Place> places = new ArrayList<Place>(addresses.size());
+        List<Place> places = new ArrayList<>(addresses.size());
         for (Address address : addresses) {
             AddressResponse addressResponse = retrieveCoord(address);
             AddressPlace addressPlace = addressResponse.getAddresses().get(0);
@@ -213,7 +213,7 @@ public class MapService {
     }
 
     private static List<Place> transformVelib(List<VelibResponse> velibResponses) {
-        List<Place> velibs = new ArrayList<Place>(velibResponses.size());
+        List<Place> velibs = new ArrayList<>(velibResponses.size());
 
         for (VelibResponse velibResponse : velibResponses) {
             Place velib = new Place(velibResponse.getNumber(), velibResponse.getName(), velibResponse.getPosition().getLat(), velibResponse.getPosition().getLng());
